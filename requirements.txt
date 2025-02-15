@@ -1,0 +1,8 @@
+beautifulsoup4==4.13.3
+bs4==0.0.2
+javalang==0.13.0
+neo4j==5.28.1
+pytz==2025.1
+six==1.17.0
+soupsieve==2.6
+typing_extensions==4.12.2
