@@ -16,18 +16,19 @@ def get_file_metadata(file_path: str) -> Optional[Dict]:
         with GraphDatabase.driver(uri, auth=(user, password)) as driver:
             with driver.session() as session:
                 # Query file metadata and relationships
-                result = session.run("""
-                    MATCH (f:File {path: $file_path})
+                query = """
+                    MATCH (f)
+                    WHERE f.filePath = $file_path AND f:Model OR f:Controller OR f:Service
                     OPTIONAL MATCH (f)-[r]->(related)
-                    RETURN f.type as type,
+                    RETURN labels(f)[0] as type,
                            collect(DISTINCT {
                                type: type(r),
-                               target: related.path,
-                               targetType: related.type
-                           }) as relationships,
-                           f.imports as imports,
-                           f.dependencies as dependencies
-                    """, file_path=file_path)
+                               target: related.filePath,
+                               targetType: labels(related)[0]
+                           }) as relationships
+                    """
+                print(f"🔍 Executing Neo4j query for {file_path}:\n{query}")
+                result = session.run(query, file_path=file_path)
                 
                 data = result.single()
                 if not data:
@@ -36,9 +37,7 @@ def get_file_metadata(file_path: str) -> Optional[Dict]:
                     
                 metadata = {
                     "type": data["type"],
-                    "relationships": data["relationships"],
-                    "imports": data["imports"],
-                    "dependencies": data["dependencies"]
+                    "relationships": data["relationships"]
                 }
                 
                 print(f"📊 Retrieved metadata for {os.path.basename(file_path)}:")
