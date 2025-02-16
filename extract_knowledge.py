@@ -5,6 +5,7 @@ from java_knowledge_extractor import KnowledgeGraphBuilder, parse_java_files as 
 from database_knowledge_extractor import DatabaseExtractor, parse_java_files as parse_database_files, detect_database_config
 from frontend_knowledge_extractor import FrontendExtractor, extract_frontend_info
 from planner import MigrationPlanner
+from document_knowledge_extractor import DocumentExtractor
 
 class KnowledgeExtraction:
     def __init__(self, source_dir, neo4j_uri="bolt://localhost:7687", neo4j_user="neo4j", neo4j_password="password"):
@@ -18,6 +19,7 @@ class KnowledgeExtraction:
         self.db_extractor = DatabaseExtractor(neo4j_uri, neo4j_user, neo4j_password)
         self.frontend_extractor = FrontendExtractor(neo4j_uri, neo4j_user, neo4j_password)
         self.planner = MigrationPlanner(neo4j_uri, neo4j_user, neo4j_password)
+        self.doc_extractor = DocumentExtractor()
 
     def extract_all(self):
         """Run all extractors and generate migration report"""
@@ -39,6 +41,15 @@ class KnowledgeExtraction:
             print("\n🎨 Analyzing frontend components...")
             extract_frontend_info(self.source_dir, self.frontend_extractor)
             print("✅ Frontend analysis complete")
+
+            # Add document extraction step
+            print("\n📄 Analyzing documentation...")
+            doc_contents = self.doc_extractor.process_documents(self.source_dir)
+            if doc_contents:
+                self.doc_extractor.create_vector_store(doc_contents)
+                print(f"✅ Processed {len(doc_contents)} documentation files")
+            else:
+                print("ℹ️ No documentation files (.docx or .md) found")
 
             # 4. Generate comprehensive migration report
             print("\n📋 Generating migration report...")
@@ -64,6 +75,7 @@ class KnowledgeExtraction:
             self.db_extractor.close()
             self.frontend_extractor.close()
             self.planner.close()
+            self.doc_extractor.close()
         except Exception as e:
             print(f"Warning: Error during cleanup: {str(e)}")
 
