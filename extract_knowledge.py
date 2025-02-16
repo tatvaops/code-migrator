@@ -1,9 +1,9 @@
 #!/usr/bin/env python3
 
 import os
-from kl import KnowledgeGraphBuilder, parse_java_files as parse_java_components
-from dkl import DatabaseExtractor, parse_java_files as parse_database_files, detect_database_config
-from frontend_extractor import FrontendExtractor, extract_frontend_info
+from java_knowledge_extractor import KnowledgeGraphBuilder, parse_java_files as parse_java_components
+from database_knowledge_extractor import DatabaseExtractor, parse_java_files as parse_database_files, detect_database_config
+from frontend_knowledge_extractor import FrontendExtractor, extract_frontend_info
 from planner import MigrationPlanner
 
 class KnowledgeExtraction:
